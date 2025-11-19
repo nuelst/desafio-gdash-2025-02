@@ -1,0 +1,2 @@
+"""Python collector package"""
+
