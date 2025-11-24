@@ -1,10 +1,3 @@
-/**
- * Script para criar usuários de exemplo no banco de dados
- *
- * Execute este script com:
- * npx ts-node src/users/scripts/seed-users.ts
- */
-
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../../app.module';
 import { UserRole } from '../domain/entities/user-role.enum';
@@ -63,7 +56,6 @@ async function seedUsersData() {
 
     for (const userData of seedUsers) {
       try {
-        // Verificar se usuário já existe
         const existingUser = await usersService.findByEmail(userData.email);
 
         if (existingUser) {
@@ -72,7 +64,6 @@ async function seedUsersData() {
           continue;
         }
 
-        // Criar usuário
         await usersService.create({
           name: userData.name,
           email: userData.email,
