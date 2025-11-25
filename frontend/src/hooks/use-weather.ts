@@ -28,7 +28,7 @@ export const useWeatherLocations = () => {
   return useQuery({
     queryKey: ['weather-locations'],
     queryFn: () => weatherApi.getLocations().then((res) => res.data),
-    staleTime: 1000 * 60 * 10, // 10 minutos - localizações não mudam com frequência
+    staleTime: 1000 * 60 * 10, // 10 minutos
   });
 };
 
