@@ -1,0 +1,9 @@
+# Railway Configuration
+# Este arquivo ajuda o Railway a entender melhor a estrutura do projeto
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "compose.yml"
+
+# Configurações para cada serviço serão feitas via variáveis de ambiente no dashboard do Railway
+

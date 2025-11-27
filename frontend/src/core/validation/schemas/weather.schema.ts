@@ -12,6 +12,7 @@ export const weatherLogSchema = z.object({
   windSpeed: z.number(),
   condition: z.string(),
   weatherCode: z.number(),
+  precipitationProbability: z.number().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });

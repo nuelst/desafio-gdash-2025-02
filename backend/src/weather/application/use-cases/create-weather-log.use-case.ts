@@ -13,6 +13,7 @@ export interface CreateWeatherLogDto {
   windSpeed: number;
   condition: string;
   weatherCode: number;
+  precipitationProbability?: number;
 }
 
 @Injectable()
@@ -20,10 +21,13 @@ export class CreateWeatherLogUseCase {
   constructor(
     @Inject(WEATHER_LOG_REPOSITORY_TOKEN)
     private readonly weatherLogRepository: IWeatherLogRepository,
-  ) {}
+  ) { }
 
   async execute(dto: CreateWeatherLogDto): Promise<WeatherLog> {
-    const weatherLog = WeatherLog.create(dto);
+    const weatherLog = WeatherLog.create({
+      ...dto,
+      precipitationProbability: dto.precipitationProbability ?? 0,
+    });
     await this.weatherLogRepository.create(weatherLog);
     return weatherLog;
   }

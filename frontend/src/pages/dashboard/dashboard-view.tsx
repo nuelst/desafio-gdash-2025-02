@@ -318,7 +318,7 @@ export default function DashboardView() {
       </div>
 
       {/* Cards principais - Valores atuais */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Temperatura</CardTitle>
@@ -374,6 +374,23 @@ export default function DashboardView() {
             </div>
             <p className="text-xs text-muted-foreground">
               Condição climática
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Prob. Chuva</CardTitle>
+            <Droplets className="h-4 w-4 text-cyan-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {latest.precipitationProbability !== undefined && latest.precipitationProbability !== null
+                ? `${latest.precipitationProbability.toFixed(0)}%`
+                : '-'}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Probabilidade de precipitação
             </p>
           </CardContent>
         </Card>
@@ -482,6 +499,7 @@ export default function DashboardView() {
           location: latest.location,
           latitude: latest.latitude,
           longitude: latest.longitude,
+          precipitationProbability: latest.precipitationProbability,
         } : null}
         location={params.location || undefined}
       />

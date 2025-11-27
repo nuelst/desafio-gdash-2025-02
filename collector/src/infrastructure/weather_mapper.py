@@ -22,7 +22,8 @@ class WeatherMapper:
             weather_code=current.get('weather_code'),
             condition=self.weather_api.get_weather_condition(
                 current.get('weather_code')
-            )
+            ),
+            precipitation_probability=current.get('precipitation_probability', 0.0)
         )
 
         return WeatherData(

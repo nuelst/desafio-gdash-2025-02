@@ -30,6 +30,7 @@ interface OverviewDrawerProps {
     readonly location: string
     readonly latitude?: number
     readonly longitude?: number
+    readonly precipitationProbability?: number
   } | null
   readonly location?: string
 }
@@ -208,6 +209,12 @@ export function OverviewDrawer({ open, onOpenChange, latest, location }: Overvie
                         {formatCondition(latest.condition)}
                       </Badge>
                     </div>
+                    {latest.precipitationProbability !== undefined && latest.precipitationProbability !== null && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Prob. Chuva</p>
+                        <p className="text-2xl font-bold">{latest.precipitationProbability.toFixed(0)}%</p>
+                      </div>
+                    )}
                   </div>
                   <div className="pt-4 border-t">
                     <p className="text-xs text-muted-foreground">

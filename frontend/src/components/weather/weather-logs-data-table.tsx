@@ -126,6 +126,19 @@ export function WeatherLogsDataTable({
           return <div>{formatCondition(condition)}</div>
         },
       },
+      {
+        accessorKey: "precipitationProbability",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Prob. Chuva" />
+        ),
+        cell: ({ row }) => {
+          const prob = row.getValue("precipitationProbability") as number | undefined
+          if (prob === undefined || prob === null) {
+            return <div className="text-muted-foreground">-</div>
+          }
+          return <div>{prob.toFixed(0)}%</div>
+        },
+      },
     ],
     []
   )

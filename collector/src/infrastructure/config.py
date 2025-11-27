@@ -7,14 +7,14 @@ from typing import List
 
 @dataclass
 class LocationConfig:
-~    name: str
+    name: str
     latitude: float
     longitude: float
 
 
 @dataclass
 class Config:
-~    rabbitmq_url: str
+    rabbitmq_url: str
     rabbitmq_queue: str
     locations: List[LocationConfig]
     collect_interval: int
@@ -22,7 +22,7 @@ class Config:
 
     @classmethod
     def from_env(cls) -> 'Config':
-         locations_json = os.getenv('WEATHER_LOCATIONS')
+        locations_json = os.getenv('WEATHER_LOCATIONS')
         
         if locations_json:
             try:

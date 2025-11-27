@@ -98,4 +98,15 @@ export class CreateWeatherLogDto {
   @IsNumber()
   @IsNotEmpty()
   weatherCode: number;
+
+  @ApiProperty({
+    description: 'Probabilidade de chuva em percentual (0-100)',
+    example: 45.0,
+    type: Number,
+    minimum: 0,
+    maximum: 100,
+    required: false,
+  })
+  @IsNumber()
+  precipitationProbability?: number;
 }

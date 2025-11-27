@@ -11,6 +11,7 @@ export interface WeatherLogSnapshot extends BaseSnapshot {
   windSpeed: number;
   condition: string;
   weatherCode: number;
+  precipitationProbability: number;
 }
 
 export class WeatherLog extends BaseEntity<
@@ -28,6 +29,7 @@ export class WeatherLog extends BaseEntity<
     private readonly _windSpeed: number,
     private readonly _condition: string,
     private readonly _weatherCode: number,
+    private readonly _precipitationProbability: number,
     created_at?: Date,
     updated_at?: Date,
   ) {
@@ -44,6 +46,7 @@ export class WeatherLog extends BaseEntity<
     windSpeed: number;
     condition: string;
     weatherCode: number;
+    precipitationProbability: number;
   }): WeatherLog {
     const weatherLog = new WeatherLog(
       new Id(),
@@ -56,6 +59,7 @@ export class WeatherLog extends BaseEntity<
       props.windSpeed,
       props.condition,
       props.weatherCode,
+      props.precipitationProbability,
     );
 
     weatherLog.addDomainEvent(
@@ -81,6 +85,7 @@ export class WeatherLog extends BaseEntity<
       snapshot.windSpeed,
       snapshot.condition,
       snapshot.weatherCode,
+      snapshot.precipitationProbability,
       snapshot.created_at,
       snapshot.updated_at,
     );
@@ -98,6 +103,7 @@ export class WeatherLog extends BaseEntity<
       windSpeed: this._windSpeed,
       condition: this._condition,
       weatherCode: this._weatherCode,
+      precipitationProbability: this._precipitationProbability,
       created_at: this.created_at,
       updated_at: this.updated_at,
     };
@@ -137,5 +143,9 @@ export class WeatherLog extends BaseEntity<
 
   get weatherCode(): number {
     return this._weatherCode;
+  }
+
+  get precipitationProbability(): number {
+    return this._precipitationProbability;
   }
 }

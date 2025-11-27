@@ -83,36 +83,39 @@ type Location struct {
 }
 
 type CurrentWeather struct {
-	Temperature float64 `json:"temperature"`
-	Humidity    float64 `json:"humidity"`
-	WindSpeed   float64 `json:"wind_speed"`
-	WeatherCode int     `json:"weather_code"`
-	Condition   string  `json:"condition"`
+	Temperature            float64 `json:"temperature"`
+	Humidity               float64 `json:"humidity"`
+	WindSpeed              float64 `json:"wind_speed"`
+	WeatherCode            int     `json:"weather_code"`
+	Condition              string  `json:"condition"`
+	PrecipitationProbability float64 `json:"precipitation_probability"`
 }
 
 type WeatherLogRequest struct {
-	Timestamp   string  `json:"timestamp"`
-	Location    string  `json:"location"`
-	Latitude    float64 `json:"latitude"`
-	Longitude   float64 `json:"longitude"`
-	Temperature float64 `json:"temperature"`
-	Humidity    float64 `json:"humidity"`
-	WindSpeed   float64 `json:"windSpeed"`
-	Condition   string  `json:"condition"`
-	WeatherCode int     `json:"weatherCode"`
+	Timestamp               string  `json:"timestamp"`
+	Location                string  `json:"location"`
+	Latitude                float64 `json:"latitude"`
+	Longitude               float64 `json:"longitude"`
+	Temperature             float64 `json:"temperature"`
+	Humidity                float64 `json:"humidity"`
+	WindSpeed               float64 `json:"windSpeed"`
+	Condition               string  `json:"condition"`
+	WeatherCode             int     `json:"weatherCode"`
+	PrecipitationProbability float64 `json:"precipitationProbability"`
 }
 
 func (w *WeatherData) ToAPIRequest() WeatherLogRequest {
 	return WeatherLogRequest{
-		Timestamp:   w.Timestamp.Time().Format(time.RFC3339),
-		Location:    w.Location.Name,
-		Latitude:    w.Location.Latitude,
-		Longitude:   w.Location.Longitude,
-		Temperature: w.Current.Temperature,
-		Humidity:    w.Current.Humidity,
-		WindSpeed:   w.Current.WindSpeed,
-		Condition:   w.Current.Condition,
-		WeatherCode: w.Current.WeatherCode,
+		Timestamp:                w.Timestamp.Time().Format(time.RFC3339),
+		Location:                 w.Location.Name,
+		Latitude:                 w.Location.Latitude,
+		Longitude:                w.Location.Longitude,
+		Temperature:              w.Current.Temperature,
+		Humidity:                 w.Current.Humidity,
+		WindSpeed:                w.Current.WindSpeed,
+		Condition:                w.Current.Condition,
+		WeatherCode:              w.Current.WeatherCode,
+		PrecipitationProbability: w.Current.PrecipitationProbability,
 	}
 }
 

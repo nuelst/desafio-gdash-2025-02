@@ -17,6 +17,7 @@ class CurrentWeather:
     wind_speed: float
     weather_code: int
     condition: str
+    precipitation_probability: float
 
 
 @dataclass
@@ -44,7 +45,8 @@ class WeatherData:
                 'humidity': self.current.humidity,
                 'wind_speed': self.current.wind_speed,
                 'weather_code': self.current.weather_code,
-                'condition': self.current.condition
+                'condition': self.current.condition,
+                'precipitation_probability': self.current.precipitation_probability
             }
         }
 
