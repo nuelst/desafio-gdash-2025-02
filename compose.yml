@@ -2,7 +2,7 @@ services:
   # MongoDB
   mongodb:
     image: mongo:7
-    container_name: weather-mongodb-dev
+    container_name: weather-mongodb
     ports:
       - "27017:27017"
     volumes:
@@ -20,7 +20,7 @@ services:
   # RabbitMQ
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    container_name: weather-rabbitmq-dev
+    container_name: weather-rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -36,6 +36,90 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # NestJS API
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: weather-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - API_PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/weather-dashboard
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - JWT_EXPIRES_IN=24h
+      - DEFAULT_USER_EMAIL=admin@example.com
+      - DEFAULT_USER_PASSWORD=123456
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - weather-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run start:dev
+
+  # Python Service (Weather Collector)
+  python-collector:
+    build:
+      context: ./collector
+      dockerfile: Dockerfile
+    container_name: weather-python-collector
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - RABBITMQ_QUEUE=weather-data
+      - WEATHER_LATITUDE=-23.5505
+      - WEATHER_LONGITUDE=-46.6333
+      - WEATHER_LOCATION=São Paulo, BR
+      - COLLECT_INTERVAL=3600
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - weather-network
+    volumes:
+      - ./collector:/app
+
+  # Go Worker
+  go-worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: weather-go-worker
+    environment:
+      - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672/
+      - RABBITMQ_QUEUE=weather-data
+      - NESTJS_API_URL=http://api:3000
+      - RETRY_ATTEMPTS=3
+      - RETRY_DELAY=5
+    depends_on:
+      - rabbitmq
+      - api
+    networks:
+      - weather-network
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: weather-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    depends_on:
+      - api
+    networks:
+      - weather-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host
 
 networks:
   weather-network:

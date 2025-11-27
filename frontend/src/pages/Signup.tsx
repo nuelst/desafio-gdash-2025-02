@@ -16,7 +16,6 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      // Validar com Zod e garantir que role seja 'user'
       const validated = createUserSchema.parse({
         name,
         email,
@@ -26,13 +25,11 @@ export default function Signup() {
 
       await usersApi.create(validated);
 
-      // Redirecionar para login após criar conta
       navigate('/login', {
         state: { message: 'Conta criada com sucesso! Faça login para continuar.' }
       });
     } catch (err: any) {
       if (err.errors) {
-        // Erro de validação Zod
         setError(err.errors.map((e: any) => e.message).join(', '));
       } else {
         setError(handleApiError(err));

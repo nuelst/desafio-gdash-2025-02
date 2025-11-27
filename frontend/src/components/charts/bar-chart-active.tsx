@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from "recharts"
 import { ChartConfig } from "./chart-config"

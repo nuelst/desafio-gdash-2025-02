@@ -23,10 +23,8 @@ export function RadialChartHumidity({
   height = 300,
   className,
 }: RadialChartHumidityProps) {
-  // Garantir que a umidade está entre 0 e 100
   const normalizedHumidity = Math.max(0, Math.min(100, humidity))
 
-  // Calcular o valor restante para completar 100%
   const remaining = 100 - normalizedHumidity
 
   const chartData = [
