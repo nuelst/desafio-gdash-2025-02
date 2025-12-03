@@ -44,7 +44,7 @@ export function OverviewDrawer({ open, onOpenChange, latest, location }: Overvie
     todayQuery,
     tomorrowForecastQuery,
     forecast10DaysQuery,
-  } = useOverviewDrawer(open, latest, location);
+  } = useOverviewDrawer(open, latest ?? null, location);
 
   // Mobile: bottom, Desktop: right
   const [isMobile, setIsMobile] = useState(false);
@@ -64,11 +64,10 @@ export function OverviewDrawer({ open, onOpenChange, latest, location }: Overvie
     <Drawer open={open} onOpenChange={onOpenChange} direction={drawerDirection}>
       <DrawerContent
         direction={drawerDirection}
-        className={`bg-muted ${
-          isMobile
-            ? 'h-[85vh] max-h-[85vh] rounded-t-[10px]'
-            : 'h-[100vh] max-h-[100vh] w-[90vw] sm:w-[500px]'
-        }`}
+        className={`bg-muted ${isMobile
+          ? 'h-[85vh] max-h-[85vh] rounded-t-[10px]'
+          : 'h-[100vh] max-h-[100vh] w-[90vw] sm:w-[500px]'
+          }`}
       >
         {isMobile && <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />}
         <DrawerHeader className="border-b">
