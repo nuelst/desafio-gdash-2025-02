@@ -18,21 +18,33 @@ export class DatabaseModule implements OnModuleInit {
   ) { }
 
   async onModuleInit() {
-    const defaultEmail = this.configService.get<string>('defaultUser.email');
-    const defaultPassword = this.configService.get<string>(
-      'defaultUser.password',
-    );
+    const adminEmail = this.configService.get<string>('admin.email') ||
+      this.configService.get<string>('defaultUser.email');
+    const adminPassword = this.configService.get<string>('admin.password') ||
+      this.configService.get<string>('defaultUser.password');
 
-    const existingUser = await this.usersService.findByEmail(defaultEmail);
-    if (!existingUser) {
+    const existingUser = await this.usersService.findByEmail(adminEmail);
+    if (existingUser) {
+      console.log(
+        `ℹ️  Admin já existe no banco: ${adminEmail}`,
+      );
+      return;
+    }
+
+    try {
       await this.usersService.create({
-        email: defaultEmail,
-        password: defaultPassword,
+        email: adminEmail,
+        password: adminPassword,
         name: 'Administrador',
         role: UserRole.ADMIN,
       });
       console.log(
-        `✅ Usuário padrão criado: ${defaultEmail} / ${defaultPassword} (role: admin)`,
+        `✅ Usuário admin criado no banco: ${adminEmail} (role: admin)`,
+      );
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      console.log(
+        `ℹ️  Admin configurado via variáveis de ambiente: ${adminEmail} (${errorMessage})`,
       );
     }
   }

@@ -25,6 +25,7 @@ describe('MongoWeatherLogRepository', () => {
         windSpeed: 10,
         condition: 'clear_sky',
         weatherCode: 0,
+        precipitationProbability: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       })),
@@ -79,6 +80,7 @@ describe('MongoWeatherLogRepository', () => {
       windSpeed: 10,
       condition: 'clear_sky',
       weatherCode: 0,
+      precipitationProbability: 0,
     });
 
     await repository.create(entity);

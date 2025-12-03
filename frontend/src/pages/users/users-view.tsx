@@ -37,7 +37,6 @@ import {
   SelectValue,
 } from '../../components/ui/select';
 import { UsersDataTable } from '../../components/users/users-data-table';
-import { DEFAULT_PASSWORD } from '../../core/config/constants';
 import { type CreateUserDto, type UpdateUserDto } from '../../core/validation';
 import { useAuthStore } from '../../stores/auth.store';
 import { useUsersViewModel } from './users-view-model';
@@ -69,9 +68,9 @@ export default function UsersView() {
         role: formData.role,
       };
 
-      // Só incluir password se o checkbox "Reset Password" estiver marcado
-      if (resetPassword) {
-        updateData.password = DEFAULT_PASSWORD;
+      // Só incluir password se o checkbox "Reset Password" estiver marcado e houver senha no formData
+      if (resetPassword && formData.password) {
+        updateData.password = formData.password;
       }
 
       const updatePromise = updateUser(editingUser.id, updateData);
@@ -92,11 +91,15 @@ export default function UsersView() {
         error: (error) => error instanceof Error ? error.message : 'Erro ao atualizar usuário',
       });
     } else {
-      // Criar: usar senha padrão
+      // Criar: exigir senha
+      if (!formData.password || formData.password.length < 6) {
+        toast.error('A senha deve ter pelo menos 6 caracteres');
+        return;
+      }
       const createData: CreateUserDto = {
         name: formData.name,
         email: formData.email,
-        password: DEFAULT_PASSWORD, // Senha padrão ao criar
+        password: formData.password,
         role: formData.role,
       };
 
@@ -169,9 +172,9 @@ export default function UsersView() {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Gerenciar Usuários</h1>
+    <div className="px-2 sm:px-4 lg:px-6 xl:px-8">
+      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Gerenciar Usuários</h1>
         {isAdmin && (
           <Button
             onClick={() => {
@@ -180,6 +183,7 @@ export default function UsersView() {
               setFormData({ name: '', email: '', password: '', role: 'user' });
               setShowModal(true);
             }}
+            className="w-full sm:w-auto"
           >
             <Plus className="h-4 w-4 mr-2" />
             Novo Usuário
@@ -197,7 +201,7 @@ export default function UsersView() {
       </div>
 
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[525px]">
+        <DialogContent className="w-[95vw] sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingUser ? 'Editar Usuário' : 'Novo Usuário'}</DialogTitle>
             <DialogDescription>
@@ -239,23 +243,54 @@ export default function UsersView() {
                 <AccordionContent>
                   <div className="space-y-4 pt-2">
                     {!editingUser && (
-                      <div className="text-sm text-muted-foreground">
-                        A senha padrão será definida automaticamente para este usuário.
+                      <div className="space-y-2">
+                        <Label htmlFor="password">Senha</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          required
+                          minLength={6}
+                          value={formData.password}
+                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                          placeholder="Mínimo 6 caracteres"
+                        />
+                        <div className="text-xs text-muted-foreground">
+                          A senha deve ter pelo menos 6 caracteres
+                        </div>
                       </div>
                     )}
                     {editingUser && (
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="resetPassword"
-                          checked={resetPassword}
-                          onCheckedChange={(checked) => setResetPassword(checked === true)}
-                        />
-                        <Label
-                          htmlFor="resetPassword"
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                        >
-                          Redefinir senha para a senha padrão
-                        </Label>
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="resetPassword"
+                            checked={resetPassword}
+                            onCheckedChange={(checked) => setResetPassword(checked === true)}
+                          />
+                          <Label
+                            htmlFor="resetPassword"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            Redefinir senha
+                          </Label>
+                        </div>
+                        {resetPassword && (
+                          <div className="space-y-2">
+                            <Label htmlFor="newPassword">Nova Senha</Label>
+                            <Input
+                              id="newPassword"
+                              type="password"
+                              required
+                              minLength={6}
+                              value={formData.password}
+                              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                              placeholder="Mínimo 6 caracteres"
+                            />
+                            <div className="text-xs text-muted-foreground">
+                              A senha deve ter pelo menos 6 caracteres
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                     <div className="space-y-2">

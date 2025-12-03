@@ -1,7 +1,4 @@
 import { Edit, Trash2, User } from 'lucide-react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 import {
   Accordion,
   AccordionContent,
@@ -38,122 +35,44 @@ import {
 } from '../../components/ui/dialog';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-import { usersApi } from '../../core/api';
-import type { UpdateUserDto } from '../../core/validation';
-import { useAuthStore } from '../../stores';
+import { useProfile } from '../../hooks';
 
 export default function ProfileView() {
-  const navigate = useNavigate();
-  const { user, logout, setUser } = useAuthStore();
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [formData, setFormData] = useState<UpdateUserDto & { password?: string; confirmPassword?: string }>({
-    name: user?.name || '',
-    email: user?.email || '',
-    password: '',
-    confirmPassword: '',
-  });
-
-  const handleEditClick = () => {
-    setFormData({
-      name: user?.name || '',
-      email: user?.email || '',
-      password: '',
-      confirmPassword: '',
-    });
-    setShowEditModal(true);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validar confirmação de senha se uma nova senha foi fornecida
-    if (formData.password && formData.password !== formData.confirmPassword) {
-      toast.error('As senhas não coincidem');
-      return;
-    }
-
-    const userId = user?.id || user?._id;
-    if (!userId) {
-      toast.error('Usuário não encontrado');
-      return;
-    }
-
-    // Preparar dados para atualização (sem confirmPassword)
-    const updateData: UpdateUserDto = {
-      name: formData.name,
-      email: formData.email,
-    };
-
-    // Só incluir password se foi fornecido
-    if (formData.password && formData.password.trim() !== '') {
-      updateData.password = formData.password;
-    }
-
-    const updatePromise = usersApi.update(userId, updateData).then(() => {
-      // Atualizar o store com os novos dados
-      const updatedUser = { ...user, ...updateData };
-      setUser(updatedUser);
-      setShowEditModal(false);
-      setFormData({ name: '', email: '', password: '', confirmPassword: '' });
-    });
-
-    toast.promise(updatePromise, {
-      loading: 'Atualizando perfil...',
-      success: 'Perfil atualizado com sucesso!',
-      error: (error) => error instanceof Error ? error.message : 'Erro ao atualizar perfil',
-    });
-  };
-
-  const handleDelete = async () => {
-    const userId = user?.id || user?._id;
-    if (!userId) {
-      toast.error('Usuário não encontrado');
-      return;
-    }
-
-    const deletePromise = usersApi.delete(userId).then(() => {
-      logout();
-      navigate('/login');
-    });
-
-    toast.promise(deletePromise, {
-      loading: 'Excluindo conta...',
-      success: 'Conta excluída com sucesso',
-      error: (error) => error instanceof Error ? error.message : 'Erro ao excluir conta',
-    });
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
+  const {
+    user,
+    showEditModal,
+    showDeleteDialog,
+    formData,
+    setShowEditModal,
+    setShowDeleteDialog,
+    setFormData,
+    handleEditClick,
+    handleSubmit,
+    handleDelete,
+    getInitials,
+  } = useProfile();
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-8">
+    <div className="px-2 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <Avatar className="h-12 w-12 sm:h-16 sm:w-16">
                   <AvatarImage src="" alt={user?.name} />
-                  <AvatarFallback className="text-lg">
-                    {user?.name ? getInitials(user.name) : <User className="h-8 w-8" />}
+                  <AvatarFallback className="text-base sm:text-lg">
+                    {user?.name ? getInitials(user.name) : <User className="h-6 w-6 sm:h-8 sm:w-8" />}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <CardTitle>Meu Perfil</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-lg sm:text-xl">Meu Perfil</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     Gerencie suas informações pessoais e configurações da conta
                   </CardDescription>
                 </div>
               </div>
-              <Button onClick={handleEditClick}>
+              <Button onClick={handleEditClick} className="w-full sm:w-auto">
                 <Edit className="mr-2 h-4 w-4" />
                 Editar
               </Button>
@@ -180,11 +99,7 @@ export default function ProfileView() {
             </div>
 
             <div className="pt-4 border-t">
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => setShowDeleteDialog(true)}
-              >
+              <Button type="button" variant="destructive" onClick={() => setShowDeleteDialog(true)}>
                 <Trash2 className="mr-2 h-4 w-4" />
                 Excluir Conta
               </Button>
@@ -195,7 +110,7 @@ export default function ProfileView() {
 
       {/* Modal de Edição */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="sm:max-w-[525px]">
+        <DialogContent className="w-[95vw] sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Perfil</DialogTitle>
             <DialogDescription>
@@ -257,7 +172,9 @@ export default function ProfileView() {
                           type="password"
                           minLength={6}
                           value={formData.confirmPassword}
-                          onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, confirmPassword: e.target.value })
+                          }
                         />
                       </div>
                     )}
@@ -281,8 +198,8 @@ export default function ProfileView() {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir Conta</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação não pode ser desfeita. Isso excluirá permanentemente sua
-              conta e removerá todos os seus dados de nossos servidores.
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente sua conta e removerá
+              todos os seus dados de nossos servidores.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -299,4 +216,3 @@ export default function ProfileView() {
     </div>
   );
 }
-

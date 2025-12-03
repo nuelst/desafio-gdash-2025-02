@@ -101,6 +101,7 @@ describe('WeatherService', () => {
         windSpeed: 10,
         condition: 'clear_sky',
         weatherCode: 0,
+        precipitationProbability: 0,
       };
 
       const weatherLog = WeatherLog.create(dto);
@@ -125,6 +126,7 @@ describe('WeatherService', () => {
         windSpeed: 10,
         condition: 'clear_sky',
         weatherCode: 0,
+        precipitationProbability: 0,
       });
 
       getWeatherLogsUseCase.execute.mockResolvedValue({

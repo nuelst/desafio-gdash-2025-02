@@ -10,11 +10,12 @@ import {
   MapPin,
   Minus,
   Thermometer,
-  Wind
+  Wind,
 } from 'lucide-react';
 import * as React from 'react';
 import { AreaChartLegend } from '../../components/charts/area-chart-legend';
 import { BarChartActive } from '../../components/charts/bar-chart-active';
+import { PrecipitationChart } from '../../components/charts/precipitation-chart';
 import { RadialChartHumidity } from '../../components/charts/radial-chart-humidity';
 import { OverviewDrawer } from '../../components/dashboard/overview-drawer';
 import {
@@ -48,7 +49,7 @@ import {
 import { WeatherLogsDataTable } from '../../components/weather/weather-logs-data-table';
 import { formatCondition } from '../../core/utils';
 import { groupDataByHour } from '../../core/utils/chart-helpers';
-import { useDashboardViewModel } from './dashboard-view-model';
+import { useDashboard } from '../../hooks';
 
 export default function DashboardView() {
   const {
@@ -66,17 +67,66 @@ export default function DashboardView() {
     setParams,
     uniqueLocations,
     tempStats,
-  } = useDashboardViewModel();
+    handleLocationChange,
+  } = useDashboard();
 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
-  // Dados para os gráficos individuais (dados atuais/recentes)
-  // IMPORTANTE: Este hook deve estar antes de qualquer early return
   const chartData = React.useMemo(() => {
     const logsForChart = chartLogs.length > 0 ? chartLogs : logs;
-    // Agrupar dados por hora (intervalo de 1h em 1h)
     return groupDataByHour(logsForChart);
   }, [chartLogs, logs]);
+
+  const temperatureConfig = React.useMemo(
+    () => ({
+      temperatura: {
+        label: 'Temperatura',
+        color: '#ef4444',
+      },
+    }),
+    []
+  );
+
+  const windConfig = React.useMemo(
+    () => ({
+      vento: {
+        label: 'Vento',
+        color: '#10b981',
+      },
+    }),
+    []
+  );
+
+  const precipitationConfig = React.useMemo(
+    () => ({
+      chuva: {
+        label: 'Probabilidade de Chuva',
+        color: '#3b82f6',
+      },
+    }),
+    []
+  );
+
+  const getTrendIcon = React.useCallback((trend: string) => {
+    switch (trend) {
+      case 'subindo':
+        return <ArrowUp className="h-4 w-4 text-green-500" />;
+      case 'caindo':
+        return <ArrowDown className="h-4 w-4 text-red-500" />;
+      default:
+        return <Minus className="h-4 w-4 text-gray-500" />;
+    }
+  }, []);
+
+  const handleExport = React.useCallback(
+    async (format: 'csv' | 'xlsx') => {
+      const result = await exportData(format);
+      if (!result.success && result.error) {
+        alert(result.error);
+      }
+    },
+    [exportData]
+  );
 
   if (loading) {
     return (
@@ -105,75 +155,25 @@ export default function DashboardView() {
     );
   }
 
-  const handleExport = async (format: 'csv' | 'xlsx') => {
-    const result = await exportData(format);
-    if (!result.success && result.error) {
-      alert(result.error);
-    }
-  };
-
-  const handleLocationChange = (location: string) => {
-    if (location === 'all' || !location) {
-      setParams((prev) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { location: _, ...rest } = prev;
-        return { ...rest, page: 1 };
-      });
-    } else {
-      setParams({ location, page: 1 });
-    }
-  };
-
-  const temperatureConfig = {
-    temperatura: {
-      label: 'Temperatura',
-      color: '#ef4444',
-    },
-  };
-
-
-  const windConfig = {
-    vento: {
-      label: 'Vento',
-      color: '#10b981',
-    },
-  };
-
-  const getTrendIcon = (trend: string) => {
-    switch (trend) {
-      case 'subindo':
-        return <ArrowUp className="h-4 w-4 text-green-500" />;
-      case 'caindo':
-        return <ArrowDown className="h-4 w-4 text-red-500" />;
-      default:
-        return <Minus className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
+    <div className="px-2 sm:px-4 lg:px-6 xl:px-8">
       {/* Header com filtro de localização */}
-      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="mb-4 sm:mb-6 flex flex-col gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard de Clima</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard de Clima</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Monitoramento em tempo real das condições climáticas
           </p>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Button
-            variant="outline"
-            onClick={() => setDrawerOpen(true)}
-          >
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => setDrawerOpen(true)} className="flex-1 sm:flex-initial">
             <Calendar className="h-4 w-4 mr-2" />
-            Overview
+            <span className="hidden sm:inline">Overview</span>
+            <span className="sm:hidden">Ver</span>
           </Button>
           {uniqueLocations.length > 0 && (
-            <Select
-              value={params.location || 'all'}
-              onValueChange={handleLocationChange}
-            >
-              <SelectTrigger className="w-[200px]">
+            <Select value={params.location || 'all'} onValueChange={handleLocationChange}>
+              <SelectTrigger className="w-full sm:w-[200px]">
                 <MapPin className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Todas as localizações" />
               </SelectTrigger>
@@ -189,9 +189,9 @@ export default function DashboardView() {
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <FileDown className="h-4 w-4 mr-2" />
-                Exportar
+              <Button variant="outline" className="flex-1 sm:flex-initial">
+                <FileDown className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Exportar</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -208,12 +208,12 @@ export default function DashboardView() {
           {insights && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <Bot className="h-4 w-4 mr-2" />
-                  Insights de IA
+                <Button variant="outline" className="flex-1 sm:flex-initial">
+                  <Bot className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Insights</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[500px] max-h-[80vh] overflow-y-auto p-0">
+              <DropdownMenuContent align="end" className="w-[90vw] sm:w-[500px] max-h-[80vh] overflow-y-auto p-0">
                 <Card className="border-0 shadow-none m-0">
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-3">
@@ -240,7 +240,6 @@ export default function DashboardView() {
                           </div>
                         </AccordionContent>
                       </AccordionItem>
-
 
                       <AccordionItem value="trends">
                         <AccordionTrigger>Tendências e Condições</AccordionTrigger>
@@ -272,9 +271,7 @@ export default function DashboardView() {
                                 <CardDescription>Condição Geral</CardDescription>
                               </CardHeader>
                               <CardContent>
-                                <div className="text-base font-semibold capitalize">
-                                  {insights.condition}
-                                </div>
+                                <div className="text-base font-semibold capitalize">{insights.condition}</div>
                               </CardContent>
                             </Card>
                           </div>
@@ -318,18 +315,23 @@ export default function DashboardView() {
       </div>
 
       {/* Cards principais - Valores atuais */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5 mb-6">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-5 sm:grid-cols-2 lg:grid-cols-5 mb-4 sm:mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Temperatura</CardTitle>
             <Thermometer className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{latest.temperature.toFixed(1)}°C</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-xl sm:text-2xl font-bold">{latest.temperature.toFixed(1)}°C</div>
+            <p className="text-xs text-muted-foreground mt-1">
               {tempStats.min > 0 && tempStats.max > 0 && (
-                <span>
+                <span className="hidden sm:inline">
                   Min: {tempStats.min.toFixed(1)}°C • Max: {tempStats.max.toFixed(1)}°C
+                </span>
+              )}
+              {tempStats.min > 0 && tempStats.max > 0 && (
+                <span className="sm:hidden">
+                  {tempStats.min.toFixed(0)}-{tempStats.max.toFixed(0)}°C
                 </span>
               )}
               {(!tempStats.min || !tempStats.max) && 'Temperatura atual'}
@@ -343,10 +345,8 @@ export default function DashboardView() {
             <Droplets className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{latest.humidity.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
-              Umidade relativa
-            </p>
+            <div className="text-xl sm:text-2xl font-bold">{latest.humidity.toFixed(1)}%</div>
+            <p className="text-xs text-muted-foreground mt-1">Umidade relativa</p>
           </CardContent>
         </Card>
 
@@ -356,10 +356,8 @@ export default function DashboardView() {
             <Wind className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{latest.windSpeed.toFixed(1)} km/h</div>
-            <p className="text-xs text-muted-foreground">
-              Velocidade do vento
-            </p>
+            <div className="text-xl sm:text-2xl font-bold">{latest.windSpeed.toFixed(1)} km/h</div>
+            <p className="text-xs text-muted-foreground mt-1">Velocidade do vento</p>
           </CardContent>
         </Card>
 
@@ -369,12 +367,8 @@ export default function DashboardView() {
             <Cloud className="h-4 w-4 text-gray-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold capitalize">
-              {formatCondition(latest.condition)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Condição climática
-            </p>
+            <div className="text-lg sm:text-2xl font-bold capitalize">{formatCondition(latest.condition)}</div>
+            <p className="text-xs text-muted-foreground mt-1">Condição climática</p>
           </CardContent>
         </Card>
 
@@ -384,35 +378,26 @@ export default function DashboardView() {
             <Droplets className="h-4 w-4 text-cyan-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {latest.precipitationProbability !== undefined && latest.precipitationProbability !== null
                 ? `${latest.precipitationProbability.toFixed(0)}%`
                 : '-'}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Probabilidade de precipitação
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Probabilidade de precipitação</p>
           </CardContent>
         </Card>
       </div>
 
-
       {/* Gráficos */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
         {/* Lado esquerdo: Temperatura ao Longo do Tempo (2/3 da largura) */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Temperatura ao Longo do Tempo</CardTitle>
-            <CardDescription>
-              Variação da temperatura nas últimas medições
-            </CardDescription>
+            <CardDescription>Variação da temperatura nas últimas medições</CardDescription>
           </CardHeader>
           <CardContent>
-            <AreaChartLegend
-              data={chartData}
-              config={temperatureConfig}
-              height={600}
-            />
+            <AreaChartLegend data={chartData} config={temperatureConfig} height={250} className="h-[250px] sm:h-[300px]" />
           </CardContent>
         </Card>
 
@@ -422,15 +407,10 @@ export default function DashboardView() {
           <Card>
             <CardHeader>
               <CardTitle>Umidade</CardTitle>
-              <CardDescription>
-                Nível de umidade atual
-              </CardDescription>
+              <CardDescription>Nível de umidade atual</CardDescription>
             </CardHeader>
             <CardContent>
-              <RadialChartHumidity
-                humidity={latest.humidity}
-                height={200}
-              />
+              <RadialChartHumidity humidity={latest.humidity} height={180} className="h-[180px] sm:h-[200px]" />
             </CardContent>
           </Card>
 
@@ -438,28 +418,33 @@ export default function DashboardView() {
           <Card>
             <CardHeader>
               <CardTitle>Velocidade do Vento</CardTitle>
-              <CardDescription>
-                Variação da velocidade do vento nas últimas medições
-              </CardDescription>
+              <CardDescription>Variação da velocidade do vento nas últimas medições</CardDescription>
             </CardHeader>
             <CardContent>
-              <BarChartActive
-                data={chartData}
-                config={windConfig}
-                height={300}
-              />
+              <BarChartActive data={chartData} config={windConfig} height={180} className="h-[180px] sm:h-[200px]" />
             </CardContent>
           </Card>
         </div>
       </div>
 
+      {/* Gráfico de Probabilidade de Chuva */}
+      {chartData.some((d) => d.chuva !== undefined) && (
+        <Card className="mb-4 sm:mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg sm:text-xl">Probabilidade de Chuva ao Longo do Tempo</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Variação da probabilidade de precipitação nas últimas medições</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PrecipitationChart data={chartData} config={precipitationConfig} height={250} className="h-[250px] sm:h-[300px]" />
+          </CardContent>
+        </Card>
+      )}
+
       {/* Tabela de registros */}
       <Card>
         <CardHeader>
           <CardTitle>Registros Recentes</CardTitle>
-          <CardDescription>
-            Histórico completo de medições climáticas
-          </CardDescription>
+          <CardDescription>Histórico completo de medições climáticas</CardDescription>
         </CardHeader>
         <CardContent>
           <WeatherLogsDataTable
@@ -470,18 +455,18 @@ export default function DashboardView() {
             onPageChange={(page) => setParams({ page })}
             onPageSizeChange={(pageSize) => setParams({ ...params, page: 1, limit: pageSize })}
             onLocationFilterChange={(location) => {
-              const trimmedLocation = location?.trim()
+              const trimmedLocation = location?.trim();
               if (trimmedLocation) {
-                setParams({ location: trimmedLocation, page: 1 })
+                setParams({ location: trimmedLocation, page: 1 });
               } else {
                 setParams((prev) => {
                   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                  const { location: _, ...rest } = prev
-                  return { ...rest, page: 1 }
-                })
+                  const { location: _, ...rest } = prev;
+                  return { ...rest, page: 1 };
+                });
               }
             }}
-            locationFilter={params.location || ""}
+            locationFilter={params.location || ''}
           />
         </CardContent>
       </Card>
@@ -490,17 +475,21 @@ export default function DashboardView() {
       <OverviewDrawer
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
-        latest={latest ? {
-          temperature: latest.temperature,
-          humidity: latest.humidity,
-          windSpeed: latest.windSpeed,
-          condition: latest.condition,
-          timestamp: latest.timestamp,
-          location: latest.location,
-          latitude: latest.latitude,
-          longitude: latest.longitude,
-          precipitationProbability: latest.precipitationProbability,
-        } : null}
+        latest={
+          latest
+            ? {
+              temperature: latest.temperature,
+              humidity: latest.humidity,
+              windSpeed: latest.windSpeed,
+              condition: latest.condition,
+              timestamp: latest.timestamp,
+              location: latest.location,
+              latitude: latest.latitude,
+              longitude: latest.longitude,
+              precipitationProbability: latest.precipitationProbability,
+            }
+            : null
+        }
         location={params.location || undefined}
       />
     </div>

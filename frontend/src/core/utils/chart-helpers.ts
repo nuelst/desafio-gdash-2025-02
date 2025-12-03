@@ -5,6 +5,7 @@ export interface ChartDataPoint extends Record<string, unknown> {
   temperatura: number;
   umidade: number;
   vento: number;
+  chuva?: number;
 }
 
 export interface WeatherLog {
@@ -12,6 +13,7 @@ export interface WeatherLog {
   temperature: number;
   humidity: number;
   windSpeed: number;
+  precipitationProbability?: number;
 }
 
 export function groupDataByHour(logs: WeatherLog[]): ChartDataPoint[] {
@@ -39,11 +41,17 @@ export function groupDataByHour(logs: WeatherLog[]): ChartDataPoint[] {
       const date = new Date(timestamp);
       const timeLabel = format(date, 'HH:mm');
 
+      const avgPrecipitation = hourLogs
+        .filter((log) => log.precipitationProbability !== undefined && log.precipitationProbability !== null)
+        .reduce((sum, log) => sum + (log.precipitationProbability || 0), 0) /
+        hourLogs.filter((log) => log.precipitationProbability !== undefined && log.precipitationProbability !== null).length;
+
       return {
         time: timeLabel,
         temperatura: Number(avgTemp.toFixed(1)),
         umidade: Number(avgHumidity.toFixed(1)),
         vento: Number(avgWind.toFixed(1)),
+        chuva: avgPrecipitation > 0 ? Number(avgPrecipitation.toFixed(1)) : undefined,
         _timestamp: timestamp, // Para ordenação
       } as ChartDataPoint & { _timestamp: number };
     })

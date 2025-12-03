@@ -104,9 +104,6 @@ export function LoginForm({
                 Criar conta
               </Link>
             </div>
-            <div className="mt-2 text-center text-xs text-muted-foreground">
-              Usuário padrão: admin@example.com / 123456
-            </div>
           </form>
         </CardContent>
       </Card>

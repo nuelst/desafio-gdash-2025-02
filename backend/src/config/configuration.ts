@@ -13,8 +13,12 @@ export default function configuration() {
       expiresIn: process.env.JWT_EXPIRES_IN || '24h',
     },
     defaultUser: {
-      email: process.env.DEFAULT_USER_EMAIL || 'admin@example.com',
-      password: process.env.DEFAULT_USER_PASSWORD || '123456',
+      email: process.env.DEFAULT_USER_EMAIL || 'admin@root.com',
+      password: process.env.DEFAULT_USER_PASSWORD || 'root123',
+    },
+    admin: {
+      email: process.env.ADMIN_EMAIL || process.env.DEFAULT_USER_EMAIL || 'admin@root.com',
+      password: process.env.ADMIN_PASSWORD || process.env.DEFAULT_USER_PASSWORD || 'root123',
     },
     frontend: {
       url: process.env.FRONTEND_URL || 'http://localhost:5173',

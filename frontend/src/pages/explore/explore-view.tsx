@@ -1,5 +1,4 @@
 import { Droplets, Eye, MapPin, Search, Thermometer, Wind } from 'lucide-react';
-import { useState } from 'react';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
@@ -13,37 +12,33 @@ import {
 import { Input } from '../../components/ui/input';
 import { Skeleton } from '../../components/ui/skeleton';
 import { formatCondition } from '../../core/utils';
-import { useCityDetail, useExploreCities } from '../../hooks';
+import { useExplorePage } from '../../hooks';
 
 export default function ExploreView() {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
-  const limit = 10; // Reduzido para 10 para melhor performance sem busca
-
-  const { data, isLoading, error } = useExploreCities({
+  const {
     page,
-    limit,
-    search: search || undefined,
-  });
-
-  const { data: cityDetail, isLoading: isLoadingDetail } = useCityDetail(selectedCityId);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(1);
-  };
-
-  const handleCityClick = (geonameId: number) => {
-    setSelectedCityId(geonameId);
-  };
+    search,
+    setSearch,
+    selectedCityId,
+    data,
+    isLoading,
+    error,
+    cityDetail,
+    isLoadingDetail,
+    handleSearch,
+    handleClearSearch,
+    handleCityClick,
+    handleCloseDetail,
+    handlePreviousPage,
+    handleNextPage,
+  } = useExplorePage();
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-8">
+    <div className="px-2 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Explorar Cidades</h1>
-          <p className="text-muted-foreground mt-2">
+        <div className="mb-4 sm:mb-6 lg:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Explorar Cidades</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
             Descubra cidades ao redor do mundo e veja o clima atual de cada uma
           </p>
         </div>
@@ -54,7 +49,7 @@ export default function ExploreView() {
             <CardDescription>Digite o nome de uma cidade para buscar</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSearch} className="flex gap-2">
+            <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -65,19 +60,14 @@ export default function ExploreView() {
                   className="pl-10"
                 />
               </div>
-              <Button type="submit">Buscar</Button>
-              {search && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setSearch('');
-                    setPage(1);
-                  }}
-                >
-                  Limpar
-                </Button>
-              )}
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1 sm:flex-initial">Buscar</Button>
+                {search && (
+                  <Button type="button" variant="outline" onClick={handleClearSearch} className="flex-1 sm:flex-initial">
+                    Limpar
+                  </Button>
+                )}
+              </div>
             </form>
           </CardContent>
         </Card>
@@ -85,19 +75,17 @@ export default function ExploreView() {
         {error && (
           <Card className="mb-6 border-destructive">
             <CardContent className="pt-6">
-              <p className="text-destructive font-medium mb-2">
-                Erro ao carregar cidades
-              </p>
+              <p className="text-destructive font-medium mb-2">Erro ao carregar cidades</p>
               <p className="text-sm text-muted-foreground">
-                A API de busca de cidades pode estar temporariamente indisponível ou ter excedido o limite de requisições.
-                Tente novamente mais tarde ou use uma busca mais específica.
+                A API de busca de cidades pode estar temporariamente indisponível ou ter excedido o
+                limite de requisições. Tente novamente mais tarde ou use uma busca mais específica.
               </p>
             </CardContent>
           </Card>
         )}
 
         {isLoading ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <Card key={i}>
                 <CardHeader>
@@ -112,7 +100,7 @@ export default function ExploreView() {
           </div>
         ) : data && data.cities.length > 0 ? (
           <>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-4 sm:mb-6">
               {data.cities.map((city) => (
                 <Card
                   key={city.geonameId}
@@ -145,9 +133,7 @@ export default function ExploreView() {
                               {Math.round(city.weather.temperature)}°C
                             </span>
                           </div>
-                          <Badge variant="outline">
-                            {formatCondition(city.weather.condition)}
-                          </Badge>
+                          <Badge variant="outline">{formatCondition(city.weather.condition)}</Badge>
                         </div>
                         <div className="flex gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
@@ -161,9 +147,7 @@ export default function ExploreView() {
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">
-                        Dados climáticos não disponíveis
-                      </p>
+                      <p className="text-sm text-muted-foreground">Dados climáticos não disponíveis</p>
                     )}
                   </CardContent>
                 </Card>
@@ -171,26 +155,16 @@ export default function ExploreView() {
             </div>
 
             {/* Paginação */}
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
+              <p className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
                 Mostrando {data.cities.length} de {data.total} cidades
               </p>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
+                <Button variant="outline" onClick={handlePreviousPage} disabled={page === 1} size="sm" className="text-xs sm:text-sm">
                   Anterior
                 </Button>
-                <span className="flex items-center px-4 text-sm">
-                  Página {page}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage((p) => p + 1)}
-                  disabled={!data.hasMore}
-                >
+                <span className="flex items-center px-2 sm:px-4 text-xs sm:text-sm">Página {page}</span>
+                <Button variant="outline" onClick={handleNextPage} disabled={!data.hasMore} size="sm" className="text-xs sm:text-sm">
                   Próxima
                 </Button>
               </div>
@@ -199,9 +173,7 @@ export default function ExploreView() {
         ) : (
           <Card>
             <CardContent className="pt-6">
-              <p className="text-center text-muted-foreground mb-2">
-                Nenhuma cidade encontrada
-              </p>
+              <p className="text-center text-muted-foreground mb-2">Nenhuma cidade encontrada</p>
               <p className="text-center text-sm text-muted-foreground">
                 {search
                   ? `Não encontramos resultados para "${search}". Tente buscar por outro nome ou verifique a ortografia.`
@@ -210,9 +182,7 @@ export default function ExploreView() {
               {!search && (
                 <div className="text-center text-xs text-muted-foreground mt-2 space-y-1">
                   <p>Exemplos: São Paulo, New York, Tokyo, London, Paris</p>
-                  <p className="text-[10px] opacity-75">
-                    Dados fornecidos por OpenStreetMap
-                  </p>
+                  <p className="text-[10px] opacity-75">Dados fornecidos por OpenStreetMap</p>
                 </div>
               )}
             </CardContent>
@@ -220,8 +190,8 @@ export default function ExploreView() {
         )}
 
         {/* Modal de Detalhes */}
-        <Dialog open={!!selectedCityId} onOpenChange={() => setSelectedCityId(null)}>
-          <DialogContent className="sm:max-w-[600px]">
+        <Dialog open={!!selectedCityId} onOpenChange={handleCloseDetail}>
+          <DialogContent className="w-[95vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             {isLoadingDetail ? (
               <div className="space-y-4">
                 <Skeleton className="h-8 w-48" />
@@ -304,9 +274,7 @@ export default function ExploreView() {
                               <Wind className="h-4 w-4 text-gray-500" />
                               <div>
                                 <p className="text-sm text-muted-foreground">Vento</p>
-                                <p className="font-medium">
-                                  {cityDetail.weather.windSpeed} km/h
-                                </p>
+                                <p className="font-medium">{cityDetail.weather.windSpeed} km/h</p>
                               </div>
                             </div>
                           </div>
@@ -327,4 +295,3 @@ export default function ExploreView() {
     </div>
   );
 }
-

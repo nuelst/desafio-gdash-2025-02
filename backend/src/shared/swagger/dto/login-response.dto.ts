@@ -14,9 +14,9 @@ export class LoginResponseDto {
     type: 'object',
     properties: {
       id: { type: 'string', example: '123e4567-e89b-12d3-a456-426614174000' },
-      email: { type: 'string', example: 'admin@example.com' },
-      name: { type: 'string', example: 'Administrador' },
-      role: { type: 'string', enum: ['user', 'admin'], example: 'admin' },
+      email: { type: 'string', example: 'user@example.com' },
+      name: { type: 'string', example: 'João Silva' },
+      role: { type: 'string', enum: ['user', 'admin'], example: 'user' },
     },
   })
   user: {

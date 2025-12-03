@@ -1,9 +1,15 @@
 # Railway Configuration
 # Este arquivo ajuda o Railway a entender melhor a estrutura do projeto
-
-[build]
-builder = "DOCKERFILE"
-dockerfilePath = "compose.yml"
-
-# Configurações para cada serviço serão feitas via variáveis de ambiente no dashboard do Railway
+#
+# IMPORTANTE: Para projetos com múltiplos serviços (Docker Compose),
+# você precisa criar serviços separados no Railway para cada componente.
+#
+# Não use este arquivo para deploy de múltiplos serviços.
+# Em vez disso, crie serviços individuais no dashboard do Railway:
+# - api (Root Directory: backend, Dockerfile: Dockerfile)
+# - frontend (Root Directory: frontend, Dockerfile: Dockerfile)
+# - python-collector (Root Directory: collector, Dockerfile: Dockerfile)
+# - go-worker (Root Directory: worker, Dockerfile: Dockerfile)
+#
+# Veja RAILWAY_TROUBLESHOOTING.md para instruções detalhadas.
 

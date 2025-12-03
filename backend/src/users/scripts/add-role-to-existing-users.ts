@@ -20,7 +20,11 @@ async function addRoleToExistingUsers() {
       `✅ ${result.modifiedCount} usuário(s) atualizado(s) com role 'user'`,
     );
 
-    const adminEmail = process.env.DEFAULT_USER_EMAIL || 'admin@example.com';
+    const adminEmail = process.env.ADMIN_EMAIL || process.env.DEFAULT_USER_EMAIL;
+    if (!adminEmail) {
+      console.error('❌ ADMIN_EMAIL ou DEFAULT_USER_EMAIL deve ser configurado');
+      process.exit(1);
+    }
     const adminResult = await userModel.updateOne(
       { email: adminEmail },
       { $set: { role: UserRole.ADMIN } },

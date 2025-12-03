@@ -51,8 +51,10 @@ services:
       - MONGODB_URI=mongodb://mongodb:27017/weather-dashboard
       - JWT_SECRET=your-super-secret-jwt-key-change-in-production
       - JWT_EXPIRES_IN=24h
-      - DEFAULT_USER_EMAIL=admin@example.com
-      - DEFAULT_USER_PASSWORD=123456
+      - DEFAULT_USER_EMAIL=admin@root.com
+      - DEFAULT_USER_PASSWORD=root123
+      - ADMIN_EMAIL=admin@root.com
+      - ADMIN_PASSWORD=root123
       - FRONTEND_URL=http://localhost:5173
       - GEONAMES_USERNAME=demo
     depends_on:
@@ -105,6 +107,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:3000/api
     container_name: weather-frontend
     ports:
       - "5173:80"

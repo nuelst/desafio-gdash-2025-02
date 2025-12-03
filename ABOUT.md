@@ -128,7 +128,7 @@ docker compose up -d
 # - RabbitMQ: http://localhost:15672 (guest/guest)
 ```
 
-**Login inicial:** `admin@example.com` / `123456`
+**Login inicial:** Configure via variáveis de ambiente `ADMIN_EMAIL` e `ADMIN_PASSWORD`
 
 Para mais detalhes sobre execução em desenvolvimento, configuração de variáveis de ambiente, troubleshooting e outras opções, consulte o [HOW_TO_RUN.md](./HOW_TO_RUN.md).
 
@@ -191,8 +191,9 @@ desafio-gdash-2025-02/
 ### Credenciais Padrão
 
 #### Aplicação
-- **Email:** `admin@example.com`
-- **Senha:** `123456`
+- **Email:** Configurado via `ADMIN_EMAIL` (variável de ambiente)
+- **Senha:** Configurada via `ADMIN_PASSWORD` (variável de ambiente)
+- **Nota:** As credenciais do admin não são expostas publicamente por segurança
 - **Role:** `admin`
 
 #### RabbitMQ Management

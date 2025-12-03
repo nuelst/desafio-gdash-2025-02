@@ -45,6 +45,7 @@ describe('GetWeatherInsightsUseCase', () => {
         windSpeed: 10,
         condition: 'clear_sky',
         weatherCode: 0,
+        precipitationProbability: 0,
       }),
       WeatherLog.create({
         timestamp: '2024-01-01T01:00:00Z',
@@ -56,6 +57,7 @@ describe('GetWeatherInsightsUseCase', () => {
         windSpeed: 12,
         condition: 'clear_sky',
         weatherCode: 0,
+        precipitationProbability: 10,
       }),
     ];
 
@@ -99,6 +101,7 @@ describe('GetWeatherInsightsUseCase', () => {
         windSpeed: 10,
         condition: 'clear_sky',
         weatherCode: 0,
+        precipitationProbability: 0,
       }),
     ];
 

@@ -12,12 +12,6 @@ interface SeedUser {
 
 const seedUsers: SeedUser[] = [
   {
-    name: 'Administrador',
-    email: 'admin@example.com',
-    password: 'admin123',
-    role: UserRole.ADMIN,
-  },
-  {
     name: 'João Silva',
     email: 'joao.silva@example.com',
     password: 'user123',
