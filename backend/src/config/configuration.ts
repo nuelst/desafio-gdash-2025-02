@@ -1,6 +1,6 @@
 export default function configuration() {
   return {
-    port: Number.parseInt(process.env.API_PORT || '3000', 10),
+    port: Number.parseInt(process.env.PORT || process.env.API_PORT || '3000', 10),
     mongodb: {
       uri:
         process.env.MONGODB_URI ||
