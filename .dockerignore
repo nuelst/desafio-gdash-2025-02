@@ -31,4 +31,5 @@ README.md
 ABOUT.md
 *.md
 !frontend/nginx.conf
+!package-lock.json
 
