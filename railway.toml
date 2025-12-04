@@ -1,15 +1,30 @@
 # Railway Configuration
-# Este arquivo ajuda o Railway a entender melhor a estrutura do projeto
 #
-# IMPORTANTE: Para projetos com múltiplos serviços (Docker Compose),
-# você precisa criar serviços separados no Railway para cada componente.
+# ⚠️ IMPORTANTE: Este projeto tem múltiplos serviços e NÃO pode ser deployado
+# como um único serviço. Você DEVE criar serviços separados no Railway.
 #
-# Não use este arquivo para deploy de múltiplos serviços.
-# Em vez disso, crie serviços individuais no dashboard do Railway:
-# - api (Root Directory: backend, Dockerfile: Dockerfile)
-# - frontend (Root Directory: frontend, Dockerfile: Dockerfile)
-# - python-collector (Root Directory: collector, Dockerfile: Dockerfile)
-# - go-worker (Root Directory: worker, Dockerfile: Dockerfile)
+# O Railway não suporta deploy direto de Docker Compose com múltiplos serviços.
+# O Railpack (detector automático) falhará porque há múltiplas linguagens.
 #
-# Veja RAILWAY_TROUBLESHOOTING.md para instruções detalhadas.
+# ✅ SOLUÇÃO: Crie serviços separados no dashboard do Railway:
+#
+# 1. Serviço "api":
+#    - Root Directory: backend
+#    - Dockerfile Path: Dockerfile
+#
+# 2. Serviço "frontend":
+#    - Root Directory: frontend
+#    - Dockerfile Path: Dockerfile
+#
+# 3. Serviço "python-collector":
+#    - Root Directory: collector
+#    - Dockerfile Path: Dockerfile
+#
+# 4. Serviço "go-worker":
+#    - Root Directory: worker
+#    - Dockerfile Path: Dockerfile
+#
+# 📖 Veja RAILWAY_SETUP.md para instruções detalhadas passo a passo.
+#
+# Este arquivo pode ser deletado ou ignorado - não é necessário para o deploy.
 
