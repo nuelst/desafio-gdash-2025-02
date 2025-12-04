@@ -1,35 +1,38 @@
-node_modules
-npm-debug.log
+# Git
 .git
-.gitignore
-.env
-.env.local
-.env.*.local
-dist
-build
-*.log
-.DS_Store
-coverage
-.nyc_output
+
+# Env files na raiz
+/.env
+/.env.local
+/.env.*.local
+
+# IDE
 .vscode
 .idea
-*.swp
-*.swo
-*~
-venv
-__pycache__
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-*.egg
-*.egg-info
+
+# Node modules em cada serviço serão ignorados por seus próprios .dockerignore
+**/node_modules
+**/.npm
+**/npm-debug.log
+
+# Builds em cada serviço
+**/dist
+**/build
+**/.next
+
+# Python
+**/venv
+**/__pycache__
+**/*.pyc
+
+# Logs
+**/*.log
+
+# OS
+.DS_Store
+
+# Outros
 worker-combined
 aux
-README.md
-ABOUT.md
 *.md
-!frontend/nginx.conf
-!package-lock.json
 
