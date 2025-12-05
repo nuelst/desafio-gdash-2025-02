@@ -44,7 +44,7 @@ func (c *HTTPAPIClient) SendWeatherLog(request domain.WeatherLogRequest) error {
 		return fmt.Errorf("erro ao serializar JSON: %w", err)
 	}
 
-	url := fmt.Sprintf("%s/api/weather/logs", c.baseURL)
+	url := fmt.Sprintf("%s/weather/logs", c.baseURL)
 
 	for attempt := 1; attempt <= c.retryAttempts; attempt++ {
 		resp, err := c.httpClient.Post(url, "application/json", bytes.NewBuffer(jsonData))
