@@ -124,7 +124,7 @@ docker compose up -d
 # Acesse as aplicações:
 # - Frontend: http://localhost:5173
 # - API: http://localhost:3000
-# - Swagger: http://localhost:3000/api/docs
+# - Swagger: http://localhost:3000/docs
 # - RabbitMQ: http://localhost:15672 (guest/guest)
 ```
 
@@ -184,7 +184,7 @@ desafio-gdash-2025-02/
 |---------|-----|-----------|
 | Frontend | http://localhost:5173 | Interface do usuário |
 | API Backend | http://localhost:3000 | API REST |
-| Swagger | http://localhost:3000/api/docs | Documentação da API |
+| Swagger | http://localhost:3000/docs | Documentação da API |
 | RabbitMQ Management | http://localhost:15672 | Interface de gerenciamento |
 | MongoDB | mongodb://localhost:27017 | Conexão direta ao banco |
 
@@ -295,7 +295,7 @@ Para soluções detalhadas de problemas comuns, consulte a seção [Troubleshoot
 
 - [README do Desafio](./README.md) - Requisitos completos do desafio
 - [HOW_TO_RUN.md](./HOW_TO_RUN.md) - Guia completo de execução
-- [Swagger API Docs](http://localhost:3000/api/docs) - Documentação interativa da API
+- [Swagger API Docs](http://localhost:3000/docs) - Documentação interativa da API
 
 ---
 

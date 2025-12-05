@@ -97,7 +97,7 @@ Implemente um **worker em Go**, responsável por:
 
 - Consumir mensagens da fila RabbitMQ;  
 - Validar e transformar os dados, se necessário;  
-- Enviar os registros para a **API NestJS** (por exemplo, um endpoint como `POST /api/weather/logs`);  
+- Enviar os registros para a **API NestJS** (por exemplo, um endpoint como `POST /weather/logs`);  
 - Confirmar as mensagens com **ack/nack**, implementar **retry básico**;  
 - Registrar logs das operações principais.
 
@@ -129,10 +129,10 @@ Responsabilidades sugeridas:
 - Receber registros vindos do worker Go;  
 - Armazenar em uma coleção no MongoDB (ex.: `weather_logs`);  
 - Expor endpoints, como (exemplos):
-  - `GET /api/weather/logs` — listar registros climáticos;
-  - `GET /api/weather/export.csv` — exportar CSV;
-  - `GET /api/weather/export.xlsx` — exportar XLSX;
-  - `GET ou POST /api/weather/insights` — gerar e/ou retornar insights de IA.
+  - `GET /weather/logs` — listar registros climáticos;
+  - `GET /weather/export.csv` — exportar CSV;
+  - `GET /weather/export.xlsx` — exportar XLSX;
+  - `GET ou POST /weather/insights` — gerar e/ou retornar insights de IA.
 
 Os **insights de IA** podem ser:
 
@@ -146,7 +146,7 @@ Os **insights de IA** podem ser:
 
 #### b) Usuários
 
-- Implementar um **CRUD completo de usuários** (ex.: `/api/users`);  
+- Implementar um **CRUD completo de usuários** (ex.: `/users`);  
 - Implementar autenticação (JWT ou similar);  
 - Criar um **usuário padrão** automaticamente na inicialização (ex.: `admin@example.com / 123456` — valores podem ser configuráveis via `.env`).
 
@@ -246,7 +246,7 @@ Requisitos para a parte de usuários:
 
 ---
 
-## 💡 Ideias de insights (para `/api/weather/insights` ou similar)
+## 💡 Ideias de insights (para `/weather/insights` ou similar)
 
 A forma de aplicar IA é livre. Algumas ideias possíveis:
 
