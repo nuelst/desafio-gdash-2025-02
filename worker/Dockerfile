@@ -2,10 +2,12 @@ FROM golang:1.21-alpine AS builder
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
+# Copiar go.mod e go.sum - funciona com ou sem root directory
+COPY worker/go.mod worker/go.sum ./
 RUN go mod download
 
-COPY . .
+# Copiar código fonte
+COPY worker/ .
 RUN go build -o worker main.go
 
 FROM alpine:latest
