@@ -18,10 +18,30 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
+    // Verifica se é o usuário ADMIN virtual
+    const adminId = '00000000-0000-0000-0000-000000000001';
+    if (payload.sub === adminId) {
+      const adminEmail = this.configService.get<string>('admin.email');
+      return { 
+        userId: adminId, 
+        email: adminEmail,
+        role: 'admin',
+        name: 'Administrador',
+        active: true
+      };
+    }
+
+    // Para usuários normais, busca no banco
     const user = await this.usersService.findOne(payload.sub);
     if (!user || !user.active) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Usuário não encontrado');
     }
-    return { userId: payload.sub, email: payload.email };
+    return { 
+      userId: payload.sub, 
+      email: payload.email,
+      role: user.role,
+      name: user.name,
+      active: user.active
+    };
   }
 }
