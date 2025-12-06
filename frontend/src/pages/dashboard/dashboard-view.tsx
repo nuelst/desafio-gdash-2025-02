@@ -227,11 +227,10 @@ export default function DashboardView() {
                         <CardDescription>
                           Análise inteligente dos dados climáticos ({insights.dataPoints} pontos de dados)
                           {'insights' in insights && insights.generatedBy && (
-                            <span className={`ml-2 px-2 py-0.5 rounded text-xs ${
-                              insights.generatedBy === 'ai' 
-                                ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' 
+                            <span className={`ml-2 px-2 py-0.5 rounded text-xs ${insights.generatedBy === 'ai'
+                                ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
                                 : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200'
-                            }`}>
+                              }`}>
                               {insights.generatedBy === 'ai' ? '🤖 IA (Gemini)' : '📊 Regras'}
                             </span>
                           )}
