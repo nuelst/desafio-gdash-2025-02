@@ -26,5 +26,8 @@ export default function configuration() {
     geonames: {
       username: process.env.GEONAMES_USERNAME || 'demo',
     },
+    gemini: {
+      apiKey: process.env.GEMINI_API_KEY || 'your-gemini-api-key',
+    },
   };
 }

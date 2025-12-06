@@ -20,7 +20,6 @@ import {
 } from '@nestjs/swagger';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { WeatherInsightsResponseDto } from '../shared/swagger/dto/weather-insights-response.dto';
 import { WeatherLogResponseDto } from '../shared/swagger/dto/weather-log-response.dto';
 import {
   ApiCreatedResponseWithModel,
@@ -174,9 +173,9 @@ export class WeatherController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Obter insights de IA',
+    summary: 'Obter insights de clima com IA',
     description:
-      'Gera insights inteligentes baseados nos dados climáticos históricos, incluindo médias, tendências, conforto climático e alertas.',
+      'Gera insights climáticos usando IA (Google Gemini). Analisa dados históricos e retorna texto natural e personalizado. Se a IA não estiver disponível, usa fallback automático com regras estatísticas. O campo "generatedBy" indica qual método foi usado.',
   })
   @ApiQuery({
     name: 'location',
@@ -185,10 +184,18 @@ export class WeatherController {
     description: 'Filtrar por localização',
     example: 'São Paulo',
   })
-  @ApiOkResponseWithModel(
-    WeatherInsightsResponseDto,
-    'Insights gerados com sucesso',
-  )
+  @ApiResponse({
+    status: 200,
+    description: 'Insights gerados com sucesso',
+    schema: {
+      example: {
+        insights: 'O clima está bastante agradável! Com 25°C de média e umidade em 65%, está perfeito para atividades ao ar livre. A temperatura vem subindo gradualmente, então aproveite enquanto não esquenta demais. Recomendação: leve água e protetor solar se for sair durante o dia!',
+        generatedBy: 'ai',
+        dataPoints: 72,
+        location: 'São Paulo, BR'
+      }
+    }
+  })
   @ApiStandardResponses()
   async getInsights(@Query('location') location?: string) {
     return this.weatherService.getInsights(location);
