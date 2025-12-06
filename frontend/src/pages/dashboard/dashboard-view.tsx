@@ -226,6 +226,15 @@ export default function DashboardView() {
                         <CardTitle className="text-lg">Insights de IA</CardTitle>
                         <CardDescription>
                           Análise inteligente dos dados climáticos ({insights.dataPoints} pontos de dados)
+                          {'insights' in insights && insights.generatedBy && (
+                            <span className={`ml-2 px-2 py-0.5 rounded text-xs ${
+                              insights.generatedBy === 'ai' 
+                                ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' 
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200'
+                            }`}>
+                              {insights.generatedBy === 'ai' ? '🤖 IA (Gemini)' : '📊 Regras'}
+                            </span>
+                          )}
                         </CardDescription>
                       </div>
                     </div>
@@ -236,49 +245,57 @@ export default function DashboardView() {
                         <AccordionTrigger>Resumo da Análise</AccordionTrigger>
                         <AccordionContent>
                           <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-                            <p className="text-sm text-blue-900 dark:text-blue-100">{insights.summary}</p>
+                            {'insights' in insights ? (
+                              <p className="text-sm text-blue-900 dark:text-blue-100 whitespace-pre-line">
+                                {insights.insights}
+                              </p>
+                            ) : (
+                              <p className="text-sm text-blue-900 dark:text-blue-100">{insights.summary}</p>
+                            )}
                           </div>
                         </AccordionContent>
                       </AccordionItem>
 
-                      <AccordionItem value="trends">
-                        <AccordionTrigger>Tendências e Condições</AccordionTrigger>
-                        <AccordionContent>
-                          <div className="grid grid-cols-1 gap-3 pt-2">
-                            <Card>
-                              <CardHeader className="pb-2">
-                                <CardDescription>Tendência de Temperatura</CardDescription>
-                              </CardHeader>
-                              <CardContent>
-                                <div className="flex items-center gap-2">
-                                  {getTrendIcon(insights.trend.temperature)}
-                                  <div>
-                                    <div className="text-base font-semibold capitalize">
-                                      {insights.trend.temperature}
+                      {'trend' in insights && (
+                        <AccordionItem value="trends">
+                          <AccordionTrigger>Tendências e Condições</AccordionTrigger>
+                          <AccordionContent>
+                            <div className="grid grid-cols-1 gap-3 pt-2">
+                              <Card>
+                                <CardHeader className="pb-2">
+                                  <CardDescription>Tendência de Temperatura</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                  <div className="flex items-center gap-2">
+                                    {getTrendIcon(insights.trend.temperature)}
+                                    <div>
+                                      <div className="text-base font-semibold capitalize">
+                                        {insights.trend.temperature}
+                                      </div>
+                                      {insights.trend.value !== 0 && (
+                                        <p className="text-xs text-muted-foreground">
+                                          {insights.trend.value > 0 ? '+' : ''}
+                                          {insights.trend.value.toFixed(1)}°C
+                                        </p>
+                                      )}
                                     </div>
-                                    {insights.trend.value !== 0 && (
-                                      <p className="text-xs text-muted-foreground">
-                                        {insights.trend.value > 0 ? '+' : ''}
-                                        {insights.trend.value.toFixed(1)}°C
-                                      </p>
-                                    )}
                                   </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                            <Card>
-                              <CardHeader className="pb-2">
-                                <CardDescription>Condição Geral</CardDescription>
-                              </CardHeader>
-                              <CardContent>
-                                <div className="text-base font-semibold capitalize">{insights.condition}</div>
-                              </CardContent>
-                            </Card>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
+                                </CardContent>
+                              </Card>
+                              <Card>
+                                <CardHeader className="pb-2">
+                                  <CardDescription>Condição Geral</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                  <div className="text-base font-semibold capitalize">{insights.condition}</div>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      )}
 
-                      {insights.alerts.length > 0 && (
+                      {'alerts' in insights && insights.alerts && insights.alerts.length > 0 && (
                         <AccordionItem value="alerts">
                           <AccordionTrigger>
                             <div className="flex items-center gap-2">
