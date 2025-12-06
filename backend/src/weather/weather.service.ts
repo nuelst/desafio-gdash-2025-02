@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import {
   CreateWeatherLogUseCase,
   ExportWeatherDataUseCase,
+  GenerateAIInsightsUseCase,
   GetLatestWeatherLogUseCase,
   GetLocationsUseCase,
   GetWeatherForecastUseCase,
   GetWeatherInsightsUseCase,
   GetWeatherLogsUseCase
 } from './application/use-cases';
+import { AIInsightsResponse } from './application/use-cases/generate-ai-insights.use-case';
 import { WeatherForecastResponse } from './application/use-cases/get-weather-forecast.use-case';
 import { WeatherInsights } from './application/use-cases/get-weather-insights.use-case';
 import { WeatherLogSnapshot } from './domain/entities/weather-log.entity';
@@ -17,12 +19,13 @@ import { CreateWeatherLogDto } from './dto/create-weather-log.dto';
 export class WeatherService {
   constructor(
     private readonly createWeatherLogUseCase: CreateWeatherLogUseCase,
-    private readonly getWeatherLogsUseCase: GetWeatherLogsUseCase,
-    private readonly getLatestWeatherLogUseCase: GetLatestWeatherLogUseCase,
-    private readonly getWeatherInsightsUseCase: GetWeatherInsightsUseCase,
-    private readonly getWeatherForecastUseCase: GetWeatherForecastUseCase,
     private readonly exportWeatherDataUseCase: ExportWeatherDataUseCase,
+    private readonly generateAIInsightsUseCase: GenerateAIInsightsUseCase,
+    private readonly getLatestWeatherLogUseCase: GetLatestWeatherLogUseCase,
     private readonly getLocationsUseCase: GetLocationsUseCase,
+    private readonly getWeatherForecastUseCase: GetWeatherForecastUseCase,
+    private readonly getWeatherInsightsUseCase: GetWeatherInsightsUseCase,
+    private readonly getWeatherLogsUseCase: GetWeatherLogsUseCase,
   ) { }
 
   async create(createWeatherLogDto: CreateWeatherLogDto): Promise<WeatherLogSnapshot> {
@@ -58,7 +61,13 @@ export class WeatherService {
     return log ? log.toSnapshot() : null;
   }
 
-  async getInsights(location?: string): Promise<WeatherInsights> {
+  async getInsights(location?: string): Promise<AIInsightsResponse> {
+    // Usa IA por padrão, com fallback automático para regras
+    return this.generateAIInsightsUseCase.execute(location);
+  }
+
+  async getInsightsRuleBased(location?: string): Promise<WeatherInsights> {
+    // Método alternativo: apenas regras (sem IA)
     return this.getWeatherInsightsUseCase.execute(location);
   }
 

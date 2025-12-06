@@ -60,5 +60,4 @@ ENV/
 .vite/
 dist/
 
-aux/
-.docs/
+.documentation/
