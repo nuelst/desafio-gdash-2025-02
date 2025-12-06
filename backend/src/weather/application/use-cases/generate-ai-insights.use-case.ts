@@ -37,7 +37,8 @@ export class GenerateAIInsightsUseCase {
 
     try {
       this.genAI = new GoogleGenerativeAI(apiKey);
-      this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+      this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
       this.logger.log('Gemini AI inicializado com sucesso');
     } catch (error) {
       this.logger.error('Erro ao inicializar Gemini AI:', error);
