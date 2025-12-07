@@ -16,26 +16,47 @@ Sistema de monitoramento climático em tempo real com arquitetura de microservi�
 
 ---
 
-## 🏗️ Arquitetura
+## 🏗️ Arquitetura e Fluxo de Dados
+
+![Arquitetura](./image.png)
+
+O sistema funciona em **3 ciclos principais** que garantem coleta automática e entrega de dados ao usuário:
+
+### 1️⃣ Coleta e Publicação (Automático - A cada hora)
 
 ```
-Frontend (React)    →    Backend (NestJS)    →    MongoDB
-     ↑                         ↑
-     |                         |
-     └─── JWT Auth ────────────┘
-                               ↓
-                        GeoNames API
-                     (buscar cidades)
-     
-Collector (Python) → RabbitMQ → Worker (Go) → Backend
-     ↓
-Open-Meteo API
-(dados climáticos)
+Collector (Python) → RabbitMQ → Worker (Go)
 ```
 
-O sistema coleta dados climáticos a cada hora, processa através de uma fila de mensagens, armazena no banco e gera insights automáticos. A funcionalidade "Explorar" usa a API GeoNames para buscar cidades pelo mundo.
+1. **Collector (Python)**: Busca dados de previsão do tempo na API Open-Meteo
+2. **RabbitMQ**: O Collector publica os dados brutos na fila `weather-data`
+3. **Worker (Go)**: Consome mensagens da fila com lógica de retry automático
 
-**Veja arquitetura detalhada:** [Diagrama completo](ARCHITECTURE.md)
+**Vantagem**: Se o Backend cair, os dados continuam sendo coletados e ficam na fila até serem processados.
+
+### 2️⃣ Processamento e Armazenamento
+
+```
+Worker (Go) → Backend (NestJS) → MongoDB → Gemini AI
+```
+
+1. **Backend (NestJS)**: Recebe dados via POST `/weather/logs` do Worker
+2. **MongoDB**: Valida e salva os dados na coleção `weather_logs`
+3. **Gemini AI**: Gera insights automáticos baseados nos dados históricos
+
+### 3️⃣ Requisição do Usuário e Visualização
+
+```
+Frontend (React) → Backend (NestJS) → APIs Externas
+```
+
+1. **Frontend**: Usuário faz login (JWT) e acessa o dashboard
+2. **Backend**: Atende requisições GET (`/weather/logs`, `/weather/insights`)
+3. **Explorar Cidades**: 
+   - Primeiro tenta **Nominatim** (OpenStreetMap - mais rápido)
+   - Se falhar, usa **GeoNames** (fallback)
+   - Enriquece com dados climáticos do **Open-Meteo**
+4. **Visualização**: Frontend exibe gráficos, tabelas e insights de IA
 
 ---
 
@@ -43,17 +64,11 @@ O sistema coleta dados climáticos a cada hora, processa através de uma fila de
 
 Copie `env.example` para `.env` e configure:
 
-### Essenciais
-
 ```bash
-# MongoDB
+# Essenciais
 MONGODB_URI=mongodb://localhost:27017/weather-dashboard
-
-# JWT
+RABBITMQ_URI=amqp://guest:guest@localhost:5672/
 JWT_SECRET=seu-secret-aqui
-JWT_EXPIRES_IN=24h
-
-# Admin User
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=Admin123!
 
@@ -61,27 +76,25 @@ ADMIN_PASSWORD=Admin123!
 FRONTEND_URL=http://localhost:5173
 VITE_API_URL=http://localhost:3000
 
-# APIs Externas
+# APIs Externas (Opcionais)
 GEONAMES_USERNAME=demo
-GEMINI_API_KEY=your-gemini-api-key
-
-# RabbitMQ
-RABBITMQ_URI=amqp://guest:guest@localhost:5672/
-RABBITMQ_QUEUE=weather-data
+GEMINI_API_KEY=your-gemini-api-key  # Para insights com IA
 ```
 
 ---
 
-## 🚀 Rodar em Desenvolvimento
+## 🚀 Como Rodar
 
-### Opção 1: Scripts Automáticos (Mais Fácil) ⭐
+### Opção 1: Scripts Automáticos (Recomendado) ⭐
+
+O projeto inclui scripts `.sh` que automatizam todo o processo:
 
 ```bash
 # 1. Configure variáveis
 cp env.example .env
 # Edite o .env com suas configurações
 
-# 2. Build das imagens
+# 2. Build das imagens Docker
 ./build.sh
 
 # 3. Rodar o projeto
@@ -91,84 +104,54 @@ cp env.example .env
 ./stop.sh
 ```
 
-**Veja guia completo:** [QUICK_START.md](.docs/QUICK_START.md)
+**O que cada script faz:**
+- `./build.sh` - Cria todas as imagens Docker (backend, frontend, collector, worker)
+- `./run.sh` - Inicia todos os containers e mostra URLs de acesso
+- `./stop.sh` - Para todos os containers
 
 ### Opção 2: Docker Compose Manual
 
 ```bash
-# Configure as variáveis
 cp env.example .env
-
-# Build e inicie todos os serviços
 docker compose up -d --build
-
-# Acesse:
-# - Frontend: http://localhost:5173
-# - API: http://localhost:3000
-# - Swagger: http://localhost:3000/docs
-# - RabbitMQ: http://localhost:15672 (guest/guest)
 ```
 
-### Opção 3: Rodar Separadamente (Desenvolvimento Avançado)
+**Acesse:**
+- Frontend: http://localhost:5173
+- API: http://localhost:3000
+- Swagger: http://localhost:3000/docs
+- RabbitMQ: http://localhost:15672 (guest/guest)
 
-#### Backend (NestJS)
+### Opção 3: Desenvolvimento (Sem Docker)
+
+#### Backend
 ```bash
 cd backend
 npm install
 npm run start:dev
 ```
 
-#### Frontend (React)
+#### Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-#### Collector (Python)
+#### Collector
 ```bash
 cd collector
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
 python main.py
 ```
 
-#### Worker (Go)
+#### Worker
 ```bash
 cd worker
 go mod download
 go run main.go
-```
-
----
-
-## 🐳 Build com Docker
-
-### Build Individual
-
-```bash
-# Backend
-docker build -t weather-backend -f backend/Dockerfile .
-
-# Frontend
-docker build -t weather-frontend -f frontend/Dockerfile .
-
-# Collector
-docker build -t weather-collector -f collector/Dockerfile .
-
-# Worker
-docker build -t weather-worker -f worker/Dockerfile .
-```
-
-### Rodar Container Individual
-
-```bash
-# Exemplo: Backend
-docker run -p 3000:3000 \
-  -e MONGODB_URI=mongodb://host.docker.internal:27017/weather-dashboard \
-  -e JWT_SECRET=secret \
-  weather-backend
 ```
 
 ---
@@ -181,6 +164,9 @@ docker run -p 3000:3000 \
 ├── collector/       # Python (coleta dados)
 ├── worker/          # Go (processa fila)
 ├── compose.yml      # Docker Compose
+├── build.sh         # Script de build
+├── run.sh           # Script de execução
+├── stop.sh          # Script de parada
 └── env.example      # Exemplo de variáveis
 ```
 
@@ -188,70 +174,25 @@ docker run -p 3000:3000 \
 
 ## 🛠️ Stack Tecnológico
 
-### Backend
-- NestJS + TypeScript
-- MongoDB + Mongoose
-- JWT Authentication
-- Clean Architecture
-
-### Frontend
-- React + Vite
-- TailwindCSS
-- Recharts (gráficos)
-- Zustand (estado)
-
-### Microserviços
-- Python 3.11 (Collector)
-- Go 1.21 (Worker)
-- RabbitMQ (Mensageria)
-
-### APIs Externas
-- Open-Meteo API (dados climáticos)
-- GeoNames API (buscar cidades)
-- Google Gemini AI (insights inteligentes) 🆕
-
-### Infraestrutura
-- Docker + Docker Compose
-- Railway (Backend, Worker, Collector)
-- Vercel (Frontend)
-- MongoDB Atlas
-- CloudAMQP
+- **Backend**: NestJS, MongoDB, JWT
+- **Frontend**: React, TailwindCSS, Recharts
+- **Microserviços**: Python (Collector), Go (Worker)
+- **Mensageria**: RabbitMQ
+- **APIs Externas**: Open-Meteo, Nominatim, GeoNames, Google Gemini AI
+- **Infraestrutura**: Docker, Railway, Vercel
 
 ---
 
 ## 🔑 Funcionalidades
 
-### ✅ Implementadas
-
-- **Autenticação JWT** - Login seguro
-- **Dashboard Interativo** - Visualização de dados
-- **Gráficos em Tempo Real** - Temperatura, umidade, vento
-- **Histórico Completo** - Todos os registros climáticos
-- **Insights de IA** - Análises com Google Gemini (texto natural)
-- **Exportação** - CSV e XLSX
-- **Explorar Cidades** - Buscar clima em qualquer cidade
-- **Coleta Automática** - Dados a cada hora
-- **Processamento Assíncrono** - Fila com retry
-- **API REST Documentada** - Swagger interativo
-- **Gerenciamento de Usuários** - CRUD completo
-
-### 📊 Dados Coletados
-
-- Temperatura (°C)
-- Sensação Térmica (°C)
-- Umidade (%)
-- Velocidade do Vento (km/h)
-- Precipitação (mm)
-- Condição do Tempo
-- Timestamp
-
----
-
-## 📚 Documentação Adicional
-
-- **Requisitos**: [README.md](../README.md)
-- **Arquitetura**: [ARCHITECTURE.md](ARCHITECTURE.md)
-- **Configurar Gemini AI**: [backend/GEMINI_SETUP.md](../backend/GEMINI_SETUP.md) 🆕
+- ✅ Autenticação JWT
+- ✅ Dashboard interativo com gráficos
+- ✅ Insights de IA (Google Gemini)
+- ✅ Exportação CSV/XLSX
+- ✅ Explorar cidades pelo mundo
+- ✅ Coleta automática a cada hora
+- ✅ Processamento assíncrono com retry
+- ✅ API REST documentada (Swagger)
 
 ---
 
@@ -261,58 +202,14 @@ docker run -p 3000:3000 \
 - Verifique `VITE_API_URL` no `.env`
 - Verifique CORS no backend (`FRONTEND_URL`)
 
-### Collector não envia mensagens
-- Verifique `RABBITMQ_URI`
-- Veja logs: `docker compose logs collector`
+### Collector/Worker não funcionam
+- Verifique `RABBITMQ_URI` no `.env`
+- Veja logs: `docker compose logs collector worker`
 
-### Worker não processa
-- Verifique `RABBITMQ_URI` e `NESTJS_API_URL`
-- Veja logs: `docker compose logs worker`
-
-### Erro de autenticação
-- Verifique `JWT_SECRET` (deve ser o mesmo em todos os lugares)
-- Token pode ter expirado (24h padrão)
+### Insights sempre retorna "generatedBy": "rules"
+- Configure `GEMINI_API_KEY` no `.env` para ativar IA
+- Obtenha chave grátis: https://aistudio.google.com/app/apikey
 
 ---
 
-## 📝 Padrões de Desenvolvimento
-
-### Backend
-- Clean Architecture
-- Domain-Driven Design
-- SOLID Principles
-- Repository Pattern
-- Use Cases
-
-### Frontend
-- Component-Based
-- Custom Hooks
-- Typed (TypeScript)
-- Responsive Design
-
----
-
-## 🚀 Deploy em Produção
-
-### Railway (Backend, Worker, Collector)
-1. Crie serviço no Railway
-2. Conecte ao GitHub
-3. Configure variáveis de ambiente
-4. Deploy automático a cada push
-
-### Vercel (Frontend)
-1. Import do GitHub
-2. Configure `VITE_API_URL`
-3. Deploy automático
-
-**Guia completo:** [.docs/RAILWAY_SETUP.md](.docs/RAILWAY_SETUP.md)
-
----
-
-## 📄 Licença
-
-MIT License - veja [LICENSE](./LICENSE)
-
----
-
-**Desenvolvido com 💙 usando tecnologias modernas**
+**Desenvolvido com 💙**

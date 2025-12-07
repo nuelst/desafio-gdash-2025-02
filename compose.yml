@@ -57,6 +57,7 @@ services:
       - ADMIN_PASSWORD=root123
       - FRONTEND_URL=http://localhost:5173
       - GEONAMES_USERNAME=demo
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-your-gemini-api-key}
     depends_on:
       mongodb:
         condition: service_healthy
